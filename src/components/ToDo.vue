@@ -95,7 +95,7 @@ onMounted(listenForTodos)
 </script>
 
 <template>
-  <h1>To-Do</h1>
+  <h1>3dImpressionSL</h1>
 
   <button @click="isFormVisible = !isFormVisible" class="btn btn-primary mb-3">
     {{ isFormVisible ? 'Cancelar' : 'Agregar Nueva Tarea' }}
