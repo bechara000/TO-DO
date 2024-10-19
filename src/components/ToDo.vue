@@ -95,7 +95,7 @@ onMounted(listenForTodos)
 </script>
 
 <template>
-  <h1>3dImpressionSL</h1>
+  <h1>To-Do</h1>
 
   <button @click="isFormVisible = !isFormVisible" class="btn btn-primary mb-3">
     {{ isFormVisible ? 'Cancelar' : 'Agregar Nueva Tarea' }}
@@ -129,7 +129,14 @@ onMounted(listenForTodos)
         required
       />
     </div>
-
+    <div class="mb-3">
+      <input
+        type="date"
+        v-model="newTask.fechaInicio"
+        class="form-control"
+        required
+      />
+    </div>
     <div class="mb-3">
       <input
         type="date"
@@ -141,9 +148,9 @@ onMounted(listenForTodos)
     <input type="submit" class="btn btn-success" value="Enviar" />
   </form>
 
+  <!-- Tabla responsiva para dispositivos pequeños -->
   <div class="table-responsive">
-    <!-- Agregado para hacer la tabla responsiva -->
-    <table class="table table-striped">
+    <table class="table table-striped table-hover">
       <thead>
         <tr>
           <th>Completar</th>
@@ -154,12 +161,11 @@ onMounted(listenForTodos)
           <th>Precio</th>
           <th>Estado</th>
           <th>Acciones</th>
-          <!-- Nueva columna para acciones -->
         </tr>
       </thead>
       <tbody>
         <tr v-for="todo in todos" :key="todo.id">
-          <td>
+          <td data-label="Completar">
             <input
               type="checkbox"
               v-model="todo.completado"
@@ -167,12 +173,12 @@ onMounted(listenForTodos)
             />
           </td>
 
-          <td>{{ todo.fechaLimite }}</td>
-          <td>{{ todo.cliente }}</td>
-          <td>{{ todo.tarea }}</td>
-          <td>{{ todo.precio }}</td>
-          <td>{{ todo.estado }}</td>
-          <td>
+          <td data-label="Fecha Limite">{{ todo.fechaLimite }}</td>
+          <td data-label="Cliente">{{ todo.cliente }}</td>
+          <td data-label="Tarea">{{ todo.tarea }}</td>
+          <td data-label="Precio">{{ todo.precio }}</td>
+          <td data-label="Estado">{{ todo.estado }}</td>
+          <td data-label="Acciones">
             <button @click="deleteTask(todo.id)" class="btn btn-danger btn-sm">
               Eliminar
             </button>
@@ -182,11 +188,53 @@ onMounted(listenForTodos)
     </table>
   </div>
 </template>
+
 <style scoped>
 h1 {
   font-size: 3rem;
   color: chocolate;
   font-weight: 800;
   text-align: center;
+}
+/* Estilo para pantallas pequeñas */
+@media (max-width: 768px) {
+  table thead {
+    display: none; /* Ocultar encabezado de la tabla en pantallas pequeñas */
+  }
+
+  table tbody,
+  table tr,
+  table td {
+    display: block; /* Mostrar cada fila y celda como un bloque */
+    width: 100%;
+  }
+
+  table tbody tr {
+    margin-bottom: 1rem;
+  }
+
+  table td {
+    text-align: right; /* Alinear el texto a la derecha */
+    padding-left: 50%;
+    position: relative;
+  }
+
+  table td::before {
+    /* Agregar etiquetas para cada celda */
+    content: attr(
+      data-label
+    ); /* Mostrar el nombre de la columna en cada celda */
+    position: absolute;
+    left: 0;
+    width: 50%;
+    padding-left: 10px;
+    font-weight: bold;
+    text-align: left;
+  }
+
+  /* Estilo para los botones */
+  table td button {
+    width: 100%;
+  }
 }
 </style>
