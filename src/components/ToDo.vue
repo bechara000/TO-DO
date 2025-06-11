@@ -1,5 +1,70 @@
+<template>
+  <h1>3DImpressionSL Lista Trabajos</h1>
+
+  <button @click="isFormVisible = !isFormVisible" class="btn btn-primary mb-3">
+    {{ isFormVisible ? 'Cancelar' : 'Agregar Nueva Tarea' }}
+  </button>
+
+  <form v-if="isFormVisible" @submit="addTask" class="mb-4">
+    <div class="mb-3">
+      <input
+        type="text"
+        v-model="newTask.tarea"
+        class="form-control"
+        placeholder="Ingrese su tarea"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <input
+        type="text"
+        v-model="newTask.cliente"
+        class="form-control"
+        placeholder="Ingrese su cliente"
+        required
+      />
+    </div>
+    <div class="mb-3">
+      <input
+        type="number"
+        v-model="newTask.precio"
+        class="form-control"
+        placeholder="Ingrese su precio"
+        required
+      />
+    </div>
+    <input type="submit" class="btn btn-success" value="Enviar" />
+  </form>
+
+  <div class="table-responsive">
+    <table class="table table-striped table-hover">
+      <thead>
+        <tr>
+          <th>Completar</th>
+          <th>Fecha Limite</th>
+          <th>Cliente</th>
+          <th>Tarea</th>
+          <th>Precio</th>
+          <th>Estado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr v-for="todo in todos" :key="todo.id">
+          <td><input type="checkbox" v-model="todo.completado" @change="updateTaskStatus(todo)" /></td>
+          <td>{{ todo.fechaLimite }}</td>
+          <td>{{ todo.cliente }}</td>
+          <td>{{ todo.tarea }}</td>
+          <td>{{ todo.precio }}</td>
+          <td>{{ todo.estado }}</td>
+          <td><button @click="deleteTask(todo.id)" class="btn btn-danger btn-sm">Eliminar</button></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</template>
+
 <script setup>
-// Importar los módulos necesarios de Firebase y Firestore
 import { ref, onMounted } from 'vue'
 import {
   collection,
@@ -14,16 +79,16 @@ import { db } from '../firebase'
 // Lista para almacenar las tareas
 const todos = ref([])
 
-// Variable para controlar la visibilidad del formulario
+// Controla la visibilidad del formulario
 const isFormVisible = ref(false)
 
-// Función para convertir Firestore Timestamp a Date
+// Convierte Timestamp de Firestore a fecha legible
 const convertTimestampToDate = timestamp => {
   const date = new Date(timestamp.seconds * 1000)
   return date.toLocaleDateString()
 }
 
-// Función para escuchar cambios en Firestore
+// Escucha en tiempo real los cambios en la colección
 const listenForTodos = () => {
   const todosCollection = collection(db, 'to-do')
   onSnapshot(todosCollection, querySnapshot => {
@@ -36,45 +101,35 @@ const listenForTodos = () => {
       tarea: doc.data().tarea,
       estado: doc.data().completado ? 'Completado' : 'Pendiente',
     }))
-
-    console.log('Datos obtenidos en tiempo real:', todos.value)
   })
 }
 
-// Definir estructura del formulario
+// Nueva tarea
 const newTask = ref({
   tarea: '',
   cliente: '',
   precio: '',
-  fechaLimite: '',
 })
 
-// Agregar tarea nueva a Firestore
+// Agrega tarea
 const addTask = async event => {
   event.preventDefault()
-
   try {
-    // Crear fecha con hora en 00:00:00 local para evitar desfase de zona horaria
-    const fecha = new Date(newTask.value.fechaLimite)
-    fecha.setHours(0, 0, 0, 0)
-
     await addDoc(collection(db, 'to-do'), {
       tarea: newTask.value.tarea,
       cliente: newTask.value.cliente,
       precio: Number(newTask.value.precio),
-      fecha_limite: fecha,
+      fecha_limite: new Date(), // Usa la fecha actual
       completado: false,
     })
-
-    // Limpiar formulario
-    newTask.value = { tarea: '', cliente: '', precio: '', fechaLimite: '' }
+    newTask.value = { tarea: '', cliente: '', precio: '' }
     isFormVisible.value = false
   } catch (error) {
     console.error('Error al agregar la tarea:', error)
   }
 }
 
-// Actualizar estado de completado
+// Actualiza estado de completado
 const updateTaskStatus = async todo => {
   try {
     const taskDoc = doc(db, 'to-do', todo.id)
@@ -84,7 +139,7 @@ const updateTaskStatus = async todo => {
   }
 }
 
-// Eliminar tarea
+// Elimina una tarea
 const deleteTask = async id => {
   try {
     const taskDoc = doc(db, 'to-do', id)
@@ -94,6 +149,52 @@ const deleteTask = async id => {
   }
 }
 
-// Ejecutar escucha al montar el componente
+// Cargar tareas al montar el componente
 onMounted(listenForTodos)
 </script>
+
+<style scoped>
+h1 {
+  font-size: 3rem;
+  color: chocolate;
+  font-weight: 800;
+  text-align: center;
+}
+
+@media (max-width: 768px) {
+  table thead {
+    display: none;
+  }
+
+  table tbody,
+  table tr,
+  table td {
+    display: block;
+    width: 100%;
+  }
+
+  table tbody tr {
+    margin-bottom: 1rem;
+  }
+
+  table td {
+    text-align: right;
+    padding-left: 50%;
+    position: relative;
+  }
+
+  table td::before {
+    content: attr(data-label);
+    position: absolute;
+    left: 0;
+    width: 50%;
+    padding-left: 10px;
+    font-weight: bold;
+    text-align: left;
+  }
+
+  table td button {
+    width: 100%;
+  }
+}
+</style>
