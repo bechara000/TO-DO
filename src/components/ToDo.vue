@@ -23,6 +23,7 @@ const convertTimestampToDate = timestamp => {
   return date.toLocaleDateString() // Formato de fecha
 }
 
+
 // Función para escuchar cambios en Firestore
 const listenForTodos = () => {
   const todosCollection = collection(db, 'to-do')
