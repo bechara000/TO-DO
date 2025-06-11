@@ -130,6 +130,7 @@ onMounted(listenForTodos)
       />
     </div>
     <div class="mb-3">
+      <label for="fechaInicio" class="form-label">Fecha de inicio</label>
       <input
         type="date"
         v-model="newTask.fechaInicio"
@@ -138,6 +139,7 @@ onMounted(listenForTodos)
       />
     </div>
     <div class="mb-3">
+      <label for="fechaLimite" class="form-label">Fecha límite</label>
       <input
         type="date"
         v-model="newTask.fechaLimite"
