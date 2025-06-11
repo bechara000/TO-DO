@@ -33,15 +33,6 @@
         required
       />
     </div>
-    <div class="mb-3">
-      <label class="form-label">Fecha límite</label>
-      <input
-        type="date"
-        v-model="newTask.fechaLimite"
-        class="form-control"
-        required
-      />
-    </div>
     <input type="submit" class="btn btn-success" value="Enviar" />
   </form>
 
@@ -50,8 +41,7 @@
       <thead>
         <tr>
           <th>Completar</th>
-          <th>Fecha de inicio</th>
-          <th>Fecha límite</th>
+          <th>Fecha Limite</th>
           <th>Cliente</th>
           <th>Tarea</th>
           <th>Precio</th>
@@ -62,7 +52,6 @@
       <tbody>
         <tr v-for="todo in todos" :key="todo.id">
           <td><input type="checkbox" v-model="todo.completado" @change="updateTaskStatus(todo)" /></td>
-          <td>{{ todo.fechaInicio }}</td>
           <td>{{ todo.fechaLimite }}</td>
           <td>{{ todo.cliente }}</td>
           <td>{{ todo.tarea }}</td>
@@ -87,14 +76,19 @@ import {
 } from 'firebase/firestore'
 import { db } from '../firebase'
 
+// Lista para almacenar las tareas
 const todos = ref([])
+
+// Controla la visibilidad del formulario
 const isFormVisible = ref(false)
 
+// Convierte Timestamp de Firestore a fecha legible
 const convertTimestampToDate = timestamp => {
   const date = new Date(timestamp.seconds * 1000)
   return date.toLocaleDateString()
 }
 
+// Escucha en tiempo real los cambios en la colección
 const listenForTodos = () => {
   const todosCollection = collection(db, 'to-do')
   onSnapshot(todosCollection, querySnapshot => {
@@ -102,7 +96,6 @@ const listenForTodos = () => {
       id: doc.id,
       cliente: doc.data().cliente,
       completado: doc.data().completado,
-      fechaInicio: convertTimestampToDate(doc.data().fecha_inicio),
       fechaLimite: convertTimestampToDate(doc.data().fecha_limite),
       precio: doc.data().precio,
       tarea: doc.data().tarea,
@@ -111,13 +104,14 @@ const listenForTodos = () => {
   })
 }
 
+// Nueva tarea
 const newTask = ref({
   tarea: '',
   cliente: '',
   precio: '',
-  fechaLimite: '',
 })
 
+// Agrega tarea
 const addTask = async event => {
   event.preventDefault()
   try {
@@ -125,17 +119,17 @@ const addTask = async event => {
       tarea: newTask.value.tarea,
       cliente: newTask.value.cliente,
       precio: Number(newTask.value.precio),
-      fecha_inicio: new Date(), // Fecha actual automática
-      fecha_limite: new Date(newTask.value.fechaLimite),
+      fecha_limite: new Date(), // Usa la fecha actual
       completado: false,
     })
-    newTask.value = { tarea: '', cliente: '', precio: '', fechaLimite: '' }
+    newTask.value = { tarea: '', cliente: '', precio: '' }
     isFormVisible.value = false
   } catch (error) {
     console.error('Error al agregar la tarea:', error)
   }
 }
 
+// Actualiza estado de completado
 const updateTaskStatus = async todo => {
   try {
     const taskDoc = doc(db, 'to-do', todo.id)
@@ -145,6 +139,7 @@ const updateTaskStatus = async todo => {
   }
 }
 
+// Elimina una tarea
 const deleteTask = async id => {
   try {
     const taskDoc = doc(db, 'to-do', id)
@@ -154,6 +149,7 @@ const deleteTask = async id => {
   }
 }
 
+// Cargar tareas al montar el componente
 onMounted(listenForTodos)
 </script>
 
